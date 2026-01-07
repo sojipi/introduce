@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>技术实力展示 - 全栈开发者作品集</title>
+    <link rel="stylesheet" href="./src/styles/main.scss">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <!-- 粒子背景 -->
+    <div id="particles-js"></div>
+
+    <!-- 导航栏 -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span class="logo-text">TechShowcase</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#hero" class="nav-link">首页</a></li>
+                <li><a href="#skills" class="nav-link">技能展示</a></li>
+                <li><a href="#projects" class="nav-link">项目类型</a></li>
+                <li><a href="#competitions" class="nav-link">比赛获奖</a></li>
+                <li><a href="#timeline" class="nav-link">参赛日程</a></li>
+                <li><a href="#contact" class="nav-link">联系我</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 英雄区域 -->
+    <section id="hero" class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title" data-aos="fade-up">
+                <span class="typing-text"></span>
+            </h1>
+            <p class="hero-subtitle" data-aos="fade-up" data-aos-delay="200">
+                全栈开发者 | 技术创新者 | 竞赛获奖者
+            </p>
+            <div class="hero-stats" data-aos="fade-up" data-aos-delay="400">
+                <div class="stat-item">
+                    <span class="stat-number" data-count="15">0</span>
+                    <span class="stat-label">技术栈</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" data-count="8">0</span>
+                    <span class="stat-label">获奖项目</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" data-count="12">0</span>
+                    <span class="stat-label">参赛经历</span>
+                </div>
+            </div>
+            <div class="hero-cta" data-aos="fade-up" data-aos-delay="600">
+                <button class="cta-button primary">查看作品</button>
+                <button class="cta-button secondary">下载简历</button>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <canvas id="hero-canvas"></canvas>
+        </div>
+    </section>
+
+    <!-- 技能展示区域 -->
+    <section id="skills" class="skills">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">技术栈展示</h2>
+            <div class="skills-grid">
+                <!-- 前端技术 -->
+                <div class="skill-category" data-aos="fade-right">
+                    <h3>前端技术</h3>
+                    <div class="skill-items">
+                        <div class="skill-item">
+                            <i class="fab fa-react"></i>
+                            <span>React</span>
+                            <div class="skill-bar">
+                                <div class="skill-progress" data-width="95%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item">
+                            <i class="fab fa-vue"></i>
+                            <span>Vue.js</span>
+                            <div class="skill-bar">
+                                <div class="skill-progress" data-width="90%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item">
+                            <i class="fab fa-js"></i>
+                            <span>JavaScript</span>
+                            <div class="skill-bar">
+                                <div class="skill-progress" data-width="98%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item">
+                            <i class="fab fa-css3"></i>
+                            <span>CSS3/SCSS</span>
+                            <div class="skill-bar">
+                                <div class="skill-progress" data-width="95%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 后端技术 -->
+                <div class="skill-category" data-aos="fade-left">
+                    <h3>后端技术</h3>
+                    <div class="skill-items">
+                        <div class="skill-item">
+                            <i class="fab fa-node-js"></i>
+                            <span>Node.js</span>
+                            <div class="skill-bar">
+                                <div class="skill-progress" data-width="88%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item">
+                            <i class="fab fa-python"></i>
+                            <span>Python</span>
+                            <div class="skill-bar">
+                                <div class="skill-progress" data-width="85%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item">
+                            <i class="fas fa-database"></i>
+                            <span>MongoDB</span>
+                            <div class="skill-bar">
+                                <div class="skill-progress" data-width="80%"></div>
+                            </div>
+                        </div>
+                        <div class="skill-item">
+                            <i class="fas fa-server"></i>
+                            <span>Express</span>
+                            <div class="skill-bar">
+                                <div class="skill-progress" data-width="90%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3D技能可视化 -->
+            <div class="skills-3d" data-aos="zoom-in">
+                <canvas id="skills-canvas"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <!-- 项目类型展示 -->
+    <section id="projects" class="projects">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">项目类型展示</h2>
+            <div class="project-categories">
+                <div class="category-tabs">
+                    <button class="tab-btn active" data-category="web">Web应用</button>
+                    <button class="tab-btn" data-category="mobile">移动应用</button>
+                    <button class="tab-btn" data-category="ai">AI/ML项目</button>
+                    <button class="tab-btn" data-category="game">游戏开发</button>
+                    <button class="tab-btn" data-category="blockchain">区块链</button>
+                </div>
+
+                <div class="project-showcase">
+                    <div class="project-grid" id="project-grid">
+                        <!-- 项目卡片将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 比赛获奖展示 -->
+    <section id="competitions" class="competitions">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">比赛获奖情况</h2>
+            <div class="awards-showcase">
+                <div class="award-stats" data-aos="fade-right">
+                    <canvas id="awards-chart"></canvas>
+                </div>
+                <div class="award-list" data-aos="fade-left">
+                    <div class="award-item">
+                        <div class="award-icon gold">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <div class="award-info">
+                            <h4>全国大学生程序设计竞赛</h4>
+                            <p>金奖 - 2023年</p>
+                            <span class="award-tech">算法优化 | 数据结构</span>
+                        </div>
+                    </div>
+                    <div class="award-item">
+                        <div class="award-icon silver">
+                            <i class="fas fa-medal"></i>
+                        </div>
+                        <div class="award-info">
+                            <h4>互联网+创新创业大赛</h4>
+                            <p>银奖 - 2023年</p>
+                            <span class="award-tech">全栈开发 | 商业模式</span>
+                        </div>
+                    </div>
+                    <div class="award-item">
+                        <div class="award-icon bronze">
+                            <i class="fas fa-award"></i>
+                        </div>
+                        <div class="award-info">
+                            <h4>蓝桥杯软件设计大赛</h4>
+                            <p>一等奖 - 2022年</p>
+                            <span class="award-tech">Java开发 | 算法设计</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 参赛日程表 -->
+    <section id="timeline" class="timeline">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">参赛日程表</h2>
+            <div class="timeline-container">
+                <div class="timeline-line"></div>
+                <div class="timeline-items">
+                    <!-- 时间线项目将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 联系区域 -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <h2 class="section-title" data-aos="fade-up">联系我</h2>
+            <div class="contact-content">
+                <div class="contact-info" data-aos="fade-right">
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <span>your.email@example.com</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fab fa-github"></i>
+                        <span>github.com/yourusername</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fab fa-linkedin"></i>
+                        <span>linkedin.com/in/yourprofile</span>
+                    </div>
+                </div>
+                <div class="contact-form" data-aos="fade-left">
+                    <form id="contact-form">
+                        <input type="text" placeholder="姓名" required>
+                        <input type="email" placeholder="邮箱" required>
+                        <textarea placeholder="消息" rows="5" required></textarea>
+                        <button type="submit">发送消息</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 脚本 -->
+    <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script type="module" src="./src/js/main.js"></script>
+</body>
+
+</html>

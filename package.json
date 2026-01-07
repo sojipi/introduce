@@ -1,0 +1,22 @@
+{
+    "name": "tech-showcase-portfolio",
+    "version": "1.0.0",
+    "description": "个人技术实力展示项目",
+    "main": "index.html",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview"
+    },
+    "devDependencies": {
+        "vite": "^5.0.0",
+        "sass": "^1.69.0"
+    },
+    "dependencies": {
+        "three": "^0.158.0",
+        "gsap": "^3.12.0",
+        "chart.js": "^4.4.0",
+        "particles.js": "^2.0.0",
+        "aos": "^2.3.4"
+    }
+}
