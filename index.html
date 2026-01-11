@@ -4,8 +4,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>技术实力展示 - 全栈开发者作品集</title>
-    <link rel="stylesheet" href="./src/styles/main.scss">
+    <meta name="description" content="展示前端技术实力的个人作品集网站 - 全栈开发、技术创新">
+    <meta name="theme-color" content="#00d4ff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="技术展示">
+
+    <title>个人展示 - 全栈开发者作品集</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Icons -->
+    <link rel="icon" type="image/x-icon" href="./favicon.ico">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="./src/styles/main.css">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -18,14 +33,14 @@
     <nav class="navbar" id="navbar">
         <div class="nav-container">
             <div class="nav-logo">
-                <span class="logo-text">TechShowcase</span>
+                <span class="logo-text">老兵编程</span>
             </div>
             <ul class="nav-menu">
                 <li><a href="#hero" class="nav-link">首页</a></li>
                 <li><a href="#skills" class="nav-link">技能展示</a></li>
                 <li><a href="#projects" class="nav-link">项目类型</a></li>
                 <li><a href="#competitions" class="nav-link">比赛获奖</a></li>
-                <li><a href="#timeline" class="nav-link">参赛日程</a></li>
+                <li><a href="#timeline" class="nav-link">timeline</a></li>
                 <li><a href="#contact" class="nav-link">联系我</a></li>
             </ul>
             <div class="hamburger">
@@ -43,25 +58,38 @@
                 <span class="typing-text"></span>
             </h1>
             <p class="hero-subtitle" data-aos="fade-up" data-aos-delay="200">
-                全栈开发者 | 技术创新者 | 竞赛获奖者
+                全栈开发 | 技术创新
             </p>
-            <div class="hero-stats" data-aos="fade-up" data-aos-delay="400">
-                <div class="stat-item">
-                    <span class="stat-number" data-count="15">0</span>
-                    <span class="stat-label">技术栈</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number" data-count="8">0</span>
-                    <span class="stat-label">获奖项目</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number" data-count="12">0</span>
-                    <span class="stat-label">参赛经历</span>
+
+            <!-- 技术标签云 -->
+            <div class="tech-tags" data-aos="fade-up" data-aos-delay="400">
+                <span class="tech-tag" style="--delay: 0s">WebGL</span>
+                <span class="tech-tag" style="--delay: 0.1s">React</span>
+                <span class="tech-tag" style="--delay: 0.2s">Node.js</span>
+                <span class="tech-tag" style="--delay: 0.3s">TypeScript</span>
+                <span class="tech-tag" style="--delay: 0.4s">PWA</span>
+                <span class="tech-tag" style="--delay: 0.5s">Docker</span>
+                <span class="tech-tag" style="--delay: 0.6s">GraphQL</span>
+                <span class="tech-tag" style="--delay: 0.7s">WebAssembly</span>
+            </div>
+
+            <!-- 实时代码展示 -->
+            <div class="code-showcase" data-aos="fade-up" data-aos-delay="600">
+                <div class="code-window">
+                    <div class="code-header">
+                        <span class="code-dot red"></span>
+                        <span class="code-dot yellow"></span>
+                        <span class="code-dot green"></span>
+                        <span class="code-title">showcase.js</span>
+                    </div>
+                    <div class="code-content">
+                        <pre><code id="typing-code"></code></pre>
+                    </div>
                 </div>
             </div>
-            <div class="hero-cta" data-aos="fade-up" data-aos-delay="600">
+
+            <div class="hero-cta" data-aos="fade-up" data-aos-delay="800">
                 <button class="cta-button primary">查看作品</button>
-                <button class="cta-button secondary">下载简历</button>
             </div>
         </div>
         <div class="hero-visual">
@@ -74,81 +102,13 @@
         <div class="container">
             <h2 class="section-title" data-aos="fade-up">技术栈展示</h2>
             <div class="skills-grid">
-                <!-- 前端技术 -->
-                <div class="skill-category" data-aos="fade-right">
-                    <h3>前端技术</h3>
-                    <div class="skill-items">
-                        <div class="skill-item">
-                            <i class="fab fa-react"></i>
-                            <span>React</span>
-                            <div class="skill-bar">
-                                <div class="skill-progress" data-width="95%"></div>
-                            </div>
-                        </div>
-                        <div class="skill-item">
-                            <i class="fab fa-vue"></i>
-                            <span>Vue.js</span>
-                            <div class="skill-bar">
-                                <div class="skill-progress" data-width="90%"></div>
-                            </div>
-                        </div>
-                        <div class="skill-item">
-                            <i class="fab fa-js"></i>
-                            <span>JavaScript</span>
-                            <div class="skill-bar">
-                                <div class="skill-progress" data-width="98%"></div>
-                            </div>
-                        </div>
-                        <div class="skill-item">
-                            <i class="fab fa-css3"></i>
-                            <span>CSS3/SCSS</span>
-                            <div class="skill-bar">
-                                <div class="skill-progress" data-width="95%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 后端技术 -->
-                <div class="skill-category" data-aos="fade-left">
-                    <h3>后端技术</h3>
-                    <div class="skill-items">
-                        <div class="skill-item">
-                            <i class="fab fa-node-js"></i>
-                            <span>Node.js</span>
-                            <div class="skill-bar">
-                                <div class="skill-progress" data-width="88%"></div>
-                            </div>
-                        </div>
-                        <div class="skill-item">
-                            <i class="fab fa-python"></i>
-                            <span>Python</span>
-                            <div class="skill-bar">
-                                <div class="skill-progress" data-width="85%"></div>
-                            </div>
-                        </div>
-                        <div class="skill-item">
-                            <i class="fas fa-database"></i>
-                            <span>MongoDB</span>
-                            <div class="skill-bar">
-                                <div class="skill-progress" data-width="80%"></div>
-                            </div>
-                        </div>
-                        <div class="skill-item">
-                            <i class="fas fa-server"></i>
-                            <span>Express</span>
-                            <div class="skill-bar">
-                                <div class="skill-progress" data-width="90%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <!-- 技能分类将通过JavaScript动态生成 -->
             </div>
 
             <!-- 3D技能可视化 -->
-            <div class="skills-3d" data-aos="zoom-in">
+            <!-- <div class="skills-3d" data-aos="zoom-in">
                 <canvas id="skills-canvas"></canvas>
-            </div>
+            </div> -->
         </div>
     </section>
 
@@ -221,7 +181,7 @@
     <!-- 参赛日程表 -->
     <section id="timeline" class="timeline">
         <div class="container">
-            <h2 class="section-title" data-aos="fade-up">参赛日程表</h2>
+            <h2 class="section-title" data-aos="fade-up">timeline</h2>
             <div class="timeline-container">
                 <div class="timeline-line"></div>
                 <div class="timeline-items">
@@ -239,35 +199,31 @@
                 <div class="contact-info" data-aos="fade-right">
                     <div class="contact-item">
                         <i class="fas fa-envelope"></i>
-                        <span>your.email@example.com</span>
+                        <span>predevil@vip.qq.com</span>
                     </div>
-                    <div class="contact-item">
-                        <i class="fab fa-github"></i>
-                        <span>github.com/yourusername</span>
-                    </div>
-                    <div class="contact-item">
-                        <i class="fab fa-linkedin"></i>
-                        <span>linkedin.com/in/yourprofile</span>
-                    </div>
+               
                 </div>
-                <div class="contact-form" data-aos="fade-left">
-                    <form id="contact-form">
-                        <input type="text" placeholder="姓名" required>
-                        <input type="email" placeholder="邮箱" required>
-                        <textarea placeholder="消息" rows="5" required></textarea>
-                        <button type="submit">发送消息</button>
-                    </form>
+                <div class="contact-qrcode" data-aos="fade-left">
+                    <div class="qrcode-container">
+                        <img src="/qrcode.jpg" alt="微信二维码" class="qrcode-image">
+                        <p class="qrcode-text">扫码添加微信</p>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
+
+    <!-- 管理后台入口 -->
+    <a href="/admin" class="admin-portal-btn" title="管理后台">
+        <i class="fas fa-cog"></i>
+    </a>
 
     <!-- 脚本 -->
     <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.js"></script>
     <script type="module" src="./src/js/main.js"></script>
 </body>
 

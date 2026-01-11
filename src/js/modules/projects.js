@@ -1,16 +1,73 @@
 export class ProjectShowcase {
     constructor() {
-        this.projects = this.getProjectsData();
+        this.projects = {};
+        this.allData = null; // 存储统一接口的数据
         this.currentCategory = 'web';
-        this.init();
-    }
-
-    init() {
+        this.isLoaded = false;
         this.setupTabs();
-        this.renderProjects();
+        // 不在构造函数中调用init，改为懒加载
     }
 
-    getProjectsData() {
+    async init() {
+        if (this.isLoaded) {
+            console.log('✅ 项目数据已加载，跳过重复加载');
+            return;
+        }
+
+        await this.loadAllData();
+        this.setupDynamicTabs(); // 动态设置标签
+        this.renderProjects();
+        this.isLoaded = true;
+    }
+
+    // 从分段接口加载项目数据
+    async loadAllData() {
+        try {
+            console.log('🔄 项目模块：从分段接口获取数据...');
+
+            const response = await fetch('/api/frontend/projects');
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    console.log('✅ 项目模块：成功获取数据');
+                    this.projects = data.data;
+
+                    // 将项目数据存储到全局
+                    if (!window.showcaseData) {
+                        window.showcaseData = {};
+                    }
+                    window.showcaseData.projects = data.data;
+                } else {
+                    console.warn('项目模块：API返回数据格式错误');
+                    this.loadFallbackData();
+                }
+            } else {
+                console.warn('项目模块：API请求失败，状态码:', response.status);
+                this.loadFallbackData();
+            }
+        } catch (error) {
+            console.warn('项目模块：无法从API加载数据，使用静态数据:', error);
+            this.loadFallbackData();
+        }
+    }
+
+    // 备用静态数据
+    loadFallbackData() {
+        console.log('📦 使用备用静态数据');
+        this.projects = this.getStaticProjectsData();
+    }
+
+    updateActiveTab() {
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        tabButtons.forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.getAttribute('data-category') === this.currentCategory) {
+                btn.classList.add('active');
+            }
+        });
+    }
+
+    getStaticProjectsData() {
         return {
             web: [
                 {
@@ -141,12 +198,82 @@ export class ProjectShowcase {
         });
     }
 
+    // 动态设置分类标签
+    setupDynamicTabs() {
+        const categoryTabs = document.querySelector('.category-tabs');
+        if (!categoryTabs || !this.projects) return;
+
+        // 清空现有标签
+        categoryTabs.innerHTML = '';
+
+        // 分类名称映射
+        const categoryNames = {
+            'web': 'Web应用',
+            'mobile': '移动应用',
+            'Web Application': 'Web平台',
+            'Enterprise Software': '企业软件',
+            'Education Technology': '教育科技',
+            'Education Game': '教育游戏',
+            'Tourism Technology': '旅游科技',
+            'Service Platform': '服务平台',
+            'Hardware Integration': '硬件集成',
+            'Entertainment App': '娱乐应用',
+            'Tourism App': '旅游应用'
+        };
+
+        // 获取所有分类
+        const categories = Object.keys(this.projects);
+
+        // 设置默认分类为第一个有数据的分类
+        if (categories.length > 0) {
+            this.currentCategory = categories[0];
+        }
+
+        // 创建分类标签
+        categories.forEach((category, index) => {
+            const button = document.createElement('button');
+            button.className = `tab-btn ${index === 0 ? 'active' : ''}`;
+            button.setAttribute('data-category', category);
+            button.textContent = categoryNames[category] || category;
+
+            // 添加点击事件
+            button.addEventListener('click', () => {
+                // 移除所有活动状态
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+                // 添加当前活动状态
+                button.classList.add('active');
+
+                // 更新当前分类
+                this.currentCategory = category;
+
+                // 重新渲染项目
+                this.renderProjects();
+            });
+
+            categoryTabs.appendChild(button);
+        });
+
+        console.log(`📊 动态创建了 ${categories.length} 个项目分类标签`);
+    }
+
     renderProjects() {
         const projectGrid = document.getElementById('project-grid');
         const projects = this.projects[this.currentCategory];
 
         // 清空现有内容
         projectGrid.innerHTML = '';
+
+        // 检查是否有项目数据
+        if (!projects || projects.length === 0) {
+            projectGrid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #666;">
+                    <i class="fas fa-folder-open" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                    <p>该分类暂无项目数据</p>
+                </div>
+            `;
+            return;
+        }
 
         // 渲染项目卡片
         projects.forEach((project, index) => {

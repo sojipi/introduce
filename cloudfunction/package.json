@@ -1,0 +1,24 @@
+{
+    "name": "kv-cloud-function",
+    "version": "1.0.0",
+    "description": "通用KV存储云函数",
+    "main": "index.js",
+    "scripts": {
+        "deploy:cloudflare": "wrangler publish",
+        "deploy:aliyun": "fun deploy",
+        "deploy:tencent": "scf deploy",
+        "test": "node test.js"
+    },
+    "dependencies": {},
+    "devDependencies": {
+        "@cloudflare/workers-types": "^4.0.0"
+    },
+    "keywords": [
+        "kv",
+        "storage",
+        "cloudflare",
+        "aliyun",
+        "tencent",
+        "serverless"
+    ]
+}

@@ -1,0 +1,33 @@
+# 腾讯云函数配置文件
+service: kv-cloud-function
+
+provider:
+  name: tencent
+  runtime: Nodejs18.15
+  region: ap-guangzhou
+  memorySize: 512
+  timeout: 30
+
+functions:
+  kv-function:
+    handler: index.main_handler
+    description: 通用KV存储云函数
+    environment:
+      TENCENT_REGION: ap-guangzhou
+      TENCENT_SECRET_ID: ${env:TENCENT_SECRET_ID}
+      TENCENT_SECRET_KEY: ${env:TENCENT_SECRET_KEY}
+    events:
+      - apigw:
+          name: kv-api
+          parameters:
+            protocols:
+              - http
+              - https
+            serviceName: kv-service
+            description: KV存储API网关
+            environment: release
+            endpoints:
+              - path: /
+                method: ANY
+                function:
+                  isIntegratedResponse: true

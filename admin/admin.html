@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>技术展示 - 后台管理</title>
+    <link rel="stylesheet" href="./public/css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <div id="app">
+        <!-- 侧边栏 -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-cog"></i> 管理后台</h2>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="#dashboard" class="menu-item active" data-page="dashboard">
+                        <i class="fas fa-tachometer-alt"></i> 仪表盘
+                    </a></li>
+                <li><a href="#skills" class="menu-item" data-page="skills">
+                        <i class="fas fa-code"></i> 技能管理
+                    </a></li>
+                <li><a href="#projects" class="menu-item" data-page="projects">
+                        <i class="fas fa-folder"></i> 项目管理
+                    </a></li>
+                <li><a href="#awards" class="menu-item" data-page="awards">
+                        <i class="fas fa-trophy"></i> 获奖管理
+                    </a></li>
+                <li><a href="#timeline" class="menu-item" data-page="timeline">
+                        <i class="fas fa-calendar"></i> 时间线管理
+                    </a></li>
+                <li><a href="#settings" class="menu-item" data-page="settings">
+                        <i class="fas fa-cog"></i> 系统设置
+                    </a></li>
+            </ul>
+            <div class="sidebar-footer">
+                <button id="logout-btn" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> 退出登录
+                </button>
+            </div>
+        </nav>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 顶部导航 -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="sidebar-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 id="page-title">仪表盘</h1>
+                </div>
+                <div class="header-right">
+                    <span class="user-info">
+                        <i class="fas fa-user"></i>
+                        <span id="username">管理员</span>
+                    </span>
+                </div>
+            </header>
+
+            <!-- 页面内容 -->
+            <div class="page-content">
+                <!-- 仪表盘页面 -->
+                <div id="dashboard-page" class="page active">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="skills-count">0</h3>
+                                <p>技能总数</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-folder"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="projects-count">0</h3>
+                                <p>项目总数</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="awards-count">0</h3>
+                                <p>获奖总数</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3 id="avg-skill-level">0</h3>
+                                <p>平均技能等级</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 技能管理页面 -->
+                <div id="skills-page" class="page">
+                    <div class="page-header">
+                        <h2>技能管理</h2>
+                        <button id="add-skill-btn" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> 添加技能
+                        </button>
+                    </div>
+
+                    <div class="skills-container">
+                        <div class="skills-categories">
+                            <!-- 技能分类将动态生成 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 项目管理页面 -->
+                <div id="projects-page" class="page">
+                    <div class="page-header">
+                        <h2>项目管理</h2>
+                        <button id="add-project-btn" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> 添加项目
+                        </button>
+                    </div>
+                    <div class="projects-list">
+                        <!-- 项目列表将动态生成 -->
+                    </div>
+                </div>
+
+                <!-- 获奖管理页面 -->
+                <div id="awards-page" class="page">
+                    <div class="page-header">
+                        <h2>获奖管理</h2>
+                        <button id="add-award-btn" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> 添加获奖
+                        </button>
+                    </div>
+                    <div class="awards-list">
+                        <!-- 获奖列表将动态生成 -->
+                    </div>
+                </div>
+
+                <!-- 时间线管理页面 -->
+                <div id="timeline-page" class="page">
+                    <div class="page-header">
+                        <h2>时间线管理</h2>
+                        <button id="add-timeline-btn" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> 添加事件
+                        </button>
+                    </div>
+                    <div class="timeline-list">
+                        <!-- 时间线事件将动态生成 -->
+                    </div>
+                </div>
+
+                <!-- 系统设置页面 -->
+                <div id="settings-page" class="page">
+                    <div class="page-header">
+                        <h2>系统设置</h2>
+                    </div>
+                    <div class="settings-content">
+                        <div class="setting-group">
+                            <h3>数据管理</h3>
+                            <div class="setting-item">
+                                <label>导出所有数据</label>
+                                <button id="export-data-btn" class="btn btn-secondary">
+                                    <i class="fas fa-download"></i> 导出
+                                </button>
+                            </div>
+                            <div class="setting-item">
+                                <label>导入数据</label>
+                                <input type="file" id="import-file" accept=".json" style="display: none;">
+                                <button id="import-data-btn" class="btn btn-secondary">
+                                    <i class="fas fa-upload"></i> 导入
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 技能编辑模态框 -->
+    <div id="skill-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="skill-modal-title">添加技能</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="skill-form">
+                    <div class="form-group">
+                        <label for="skill-name">技能名称 *</label>
+                        <input type="text" id="skill-name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="skill-category">分类 *</label>
+                        <select id="skill-category" name="category" required>
+                            <option value="frontend">前端技术</option>
+                            <option value="backend">后端技术</option>
+                            <option value="tools">开发工具</option>
+                            <option value="mobile">移动开发</option>
+                            <option value="database">数据库</option>
+                            <option value="devops">DevOps</option>
+                            <option value="ai">人工智能</option>
+                            <option value="design">设计工具</option>
+                            <option value="other">其他技能</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="skill-level">技能等级 (0-100) *</label>
+                        <input type="range" id="skill-level" name="level" min="0" max="100" value="50">
+                        <span id="skill-level-value">50</span>%
+                    </div>
+                    <div class="form-group">
+                        <label for="skill-icon">图标类名</label>
+                        <input type="text" id="skill-icon" name="icon" placeholder="例如: fab fa-react">
+                    </div>
+                    <div class="form-group">
+                        <label for="skill-color">颜色</label>
+                        <input type="color" id="skill-color" name="color" value="#00d4ff">
+                    </div>
+                    <div class="form-group">
+                        <label for="skill-description">描述</label>
+                        <textarea id="skill-description" name="description" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancel-skill">取消</button>
+                <button type="submit" form="skill-form" class="btn btn-primary" id="save-skill">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 登录模态框 -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>管理员登录</h3>
+            </div>
+            <div class="modal-body">
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="username">用户名</label>
+                        <input type="text" id="login-username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">密码</label>
+                        <input type="password" id="login-password" name="password" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" form="login-form" class="btn btn-primary">登录</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 脚本 -->
+    <script src="./public/js/components/Login.js"></script>
+    <script src="./public/js/components/Dashboard.js"></script>
+    <script src="./public/js/components/SkillsManager.js"></script>
+    <script src="./public/js/components/ProjectsManager.js"></script>
+    <script src="./public/js/admin.js"></script>
+</body>
+
+</html>

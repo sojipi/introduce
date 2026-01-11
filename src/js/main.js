@@ -1,28 +1,53 @@
 // 主要功能模块
 import { ParticleSystem } from './modules/particles.js';
-import { SkillsVisualization } from './modules/skills3d.js';
-import { ProjectShowcase } from './modules/projects.js';
-import { TimelineManager } from './modules/timeline.js';
 import { AnimationController } from './modules/animations.js';
-import { ChartManager } from './modules/charts.js';
+import { LazyLoader } from './modules/lazyLoader.js';
+import { PerformanceMonitor } from './modules/performanceMonitor.js';
+import { WebGLParticleSystem } from './modules/webglParticles.js';
+import { createStore, middleware } from './modules/stateManager.js';
+import { GestureRecognizer, AdvancedInteractions } from './modules/gestureRecognizer.js';
+import { PWAManager } from './modules/pwaManager.js';
 
 class TechShowcase {
     constructor() {
+        // 初始化全局状态管理
+        this.store = createStore({
+            performance: {
+                fps: 60,
+                memory: 0
+            },
+            ui: {
+                theme: 'dark',
+                sidebarOpen: false
+            },
+            user: {
+                preferences: {}
+            }
+        });
+
+        // 添加中间件
+        const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        if (isDevelopment) {
+            this.store.use(middleware.logger);
+        }
+        this.store.use(middleware.performance);
+
         this.init();
     }
 
     init() {
         // 等待DOM加载完成
-        document.addEventListener('DOMContentLoaded', () => {
-            this.waitForLibraries().then(() => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await this.waitForLibraries();
                 this.setupNavigation();
-                this.initializeModules();
+                await this.initializeModules();
                 this.setupEventListeners();
                 this.startAnimations();
-            }).catch(error => {
+            } catch (error) {
                 console.warn('某些库加载失败，使用降级方案:', error);
                 this.initializeFallback();
-            });
+            }
         });
     }
 
@@ -62,13 +87,17 @@ class TechShowcase {
         this.setupNavigation();
         this.setupEventListeners();
 
+        // 初始化统计数据管理器（即使在降级模式下也需要）
+        this.statsManager = new StatsManager();
+
+        // 初始化技能管理器（降级模式）
+        this.skillsManager = new SkillsManager();
+
         // 使用CSS动画替代JS动画
         document.body.classList.add('fallback-mode');
 
         // 简化的初始化
         this.animateCounters();
-        this.animateSkillBars();
-        this.setupContactForm();
         this.setupCTAButtons();
     }
 
@@ -113,35 +142,48 @@ class TechShowcase {
         });
     }
 
-    initializeModules() {
-        // 初始化粒子系统
-        this.particleSystem = new ParticleSystem();
+    async initializeModules() {
+        console.log('🚀 初始化模块（懒加载模式）...');
 
-        // 初始化3D技能可视化
-        this.skillsViz = new SkillsVisualization();
+        // 初始化性能监控（高级功能）
+        this.performanceMonitor = new PerformanceMonitor();
+        console.log('✅ 性能监控已启动');
 
-        // 初始化项目展示
-        this.projectShowcase = new ProjectShowcase();
+        // 初始化 WebGL 粒子系统（替代 particles.js）
+        try {
+            this.webglParticles = new WebGLParticleSystem();
+            console.log('✅ WebGL 粒子系统已启动');
+        } catch (error) {
+            console.warn('⚠️ WebGL 不可用，使用降级方案');
+            this.particleSystem = new ParticleSystem();
+        }
 
-        // 初始化时间线
-        this.timelineManager = new TimelineManager();
+        // 初始化手势识别
+        this.gestureRecognizer = new GestureRecognizer();
+        this.setupGestureHandlers();
+        console.log('✅ 手势识别已启动');
 
-        // 初始化动画控制器
+        // 初始化高级交互
+        this.advancedInteractions = new AdvancedInteractions();
+        console.log('✅ 高级交互已启动');
+
+        // 初始化 PWA
+        this.pwaManager = new PWAManager();
+        console.log('✅ PWA 功能已启动');
+
+        // 初始化懒加载管理器（核心功能）
+        this.lazyLoader = new LazyLoader();
+        window.lazyLoader = this.lazyLoader;
+
+        // 初始化动画控制器（立即加载）
         this.animationController = new AnimationController();
 
-        // 初始化图表
-        this.chartManager = new ChartManager();
+        console.log('✅ 核心模块初始化完成，数据模块将按需加载');
     }
 
     setupEventListeners() {
         // 统计数字动画
         this.animateCounters();
-
-        // 技能条动画
-        this.animateSkillBars();
-
-        // 表单提交
-        this.setupContactForm();
 
         // CTA按钮事件
         this.setupCTAButtons();
@@ -181,56 +223,6 @@ class TechShowcase {
         counters.forEach(counter => observer.observe(counter));
     }
 
-    animateSkillBars() {
-        const skillBars = document.querySelectorAll('.skill-progress');
-        const observerOptions = {
-            threshold: 0.5,
-            rootMargin: '0px 0px -100px 0px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const bar = entry.target;
-                    const width = bar.getAttribute('data-width');
-
-                    setTimeout(() => {
-                        bar.style.width = width;
-                    }, 200);
-
-                    observer.unobserve(bar);
-                }
-            });
-        }, observerOptions);
-
-        skillBars.forEach(bar => observer.observe(bar));
-    }
-
-    setupContactForm() {
-        const form = document.getElementById('contact-form');
-
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-
-            // 模拟表单提交
-            const button = form.querySelector('button');
-            const originalText = button.textContent;
-
-            button.textContent = '发送中...';
-            button.disabled = true;
-
-            setTimeout(() => {
-                button.textContent = '发送成功!';
-                form.reset();
-
-                setTimeout(() => {
-                    button.textContent = originalText;
-                    button.disabled = false;
-                }, 2000);
-            }, 1500);
-        });
-    }
-
     setupCTAButtons() {
         const primaryCTA = document.querySelector('.cta-button.primary');
         const secondaryCTA = document.querySelector('.cta-button.secondary');
@@ -241,16 +233,16 @@ class TechShowcase {
             });
         });
 
-        secondaryCTA.addEventListener('click', () => {
-            // 模拟下载简历
-            const link = document.createElement('a');
-            link.href = '#';
-            link.download = 'resume.pdf';
-            link.click();
+        // secondaryCTA.addEventListener('click', () => {
+        //     // 模拟下载简历
+        //     const link = document.createElement('a');
+        //     link.href = '#';
+        //     link.download = 'resume.pdf';
+        //     link.click();
 
-            // 显示提示
-            this.showNotification('简历下载已开始');
-        });
+        //     // 显示提示
+        //     this.showNotification('简历下载已开始');
+        // });
     }
 
     showNotification(message) {
@@ -296,7 +288,6 @@ class TechShowcase {
         const texts = [
             '全栈开发工程师',
             '技术创新者',
-            '竞赛获奖者',
             '问题解决专家'
         ];
 
@@ -333,6 +324,111 @@ class TechShowcase {
         };
 
         type();
+
+        // 启动代码打字机效果
+        this.startCodeTyping();
+    }
+
+    startCodeTyping() {
+        const codeElement = document.getElementById('typing-code');
+        if (!codeElement) return;
+
+        const codeSnippets = [
+            `<span class="keyword">const</span> <span class="function">createWebGLParticles</span> = () => {
+  <span class="keyword">const</span> gl = canvas.<span class="function">getContext</span>(<span class="string">'webgl'</span>);
+  <span class="keyword">const</span> shader = <span class="function">compileShader</span>(gl, vertexSrc, fragmentSrc);
+
+  <span class="comment">// GPU 加速粒子渲染</span>
+  gl.<span class="function">useProgram</span>(shader);
+  gl.<span class="function">drawArrays</span>(gl.POINTS, <span class="number">0</span>, particleCount);
+
+  <span class="keyword">return</span> { render, update };
+};`,
+            `<span class="keyword">class</span> <span class="function">StateManager</span> {
+  <span class="function">constructor</span>() {
+    <span class="keyword">this</span>.state = <span class="keyword">new</span> <span class="function">Proxy</span>({}, {
+      <span class="function">set</span>(target, key, value) {
+        <span class="comment">// 响应式状态更新</span>
+        target[key] = value;
+        <span class="function">notify</span>(key, value);
+        <span class="keyword">return</span> <span class="keyword">true</span>;
+      }
+    });
+  }
+}`,
+            `<span class="keyword">async function</span> <span class="function">registerServiceWorker</span>() {
+  <span class="keyword">if</span> (<span class="string">'serviceWorker'</span> <span class="keyword">in</span> navigator) {
+    <span class="keyword">const</span> registration = <span class="keyword">await</span> navigator.serviceWorker
+      .<span class="function">register</span>(<span class="string">'/sw.js'</span>);
+
+    <span class="comment">// PWA 离线支持</span>
+    console.<span class="function">log</span>(<span class="string">'✅ Service Worker 已注册'</span>);
+  }
+}`,
+            `<span class="keyword">const</span> <span class="function">recognizeGesture</span> = (touches) => {
+  <span class="keyword">const</span> distance = <span class="function">calculateDistance</span>(touches);
+  <span class="keyword">const</span> angle = <span class="function">calculateAngle</span>(touches);
+
+  <span class="keyword">if</span> (distance > threshold) {
+    <span class="keyword">return</span> { type: <span class="string">'swipe'</span>, direction };
+  }
+
+  <span class="comment">// 支持 8+ 种手势识别</span>
+  <span class="keyword">return</span> <span class="function">detectGesture</span>(touches);
+};`
+        ];
+
+        let snippetIndex = 0;
+        let charIndex = 0;
+        let currentSnippet = '';
+
+        const typeCode = () => {
+            if (charIndex < codeSnippets[snippetIndex].length) {
+                currentSnippet += codeSnippets[snippetIndex][charIndex];
+                codeElement.innerHTML = currentSnippet;
+                charIndex++;
+                setTimeout(typeCode, 20);
+            } else {
+                setTimeout(() => {
+                    charIndex = 0;
+                    currentSnippet = '';
+                    snippetIndex = (snippetIndex + 1) % codeSnippets.length;
+                    codeElement.innerHTML = '';
+                    setTimeout(typeCode, 500);
+                }, 3000);
+            }
+        };
+
+        typeCode();
+    }
+
+    setupGestureHandlers() {
+        // 滑动手势
+        this.gestureRecognizer.on('swipe', (data) => {
+            console.log('滑动手势:', data.direction);
+
+            // 根据滑动方向切换页面
+            if (data.direction === 'left') {
+                // 下一页
+            } else if (data.direction === 'right') {
+                // 上一页
+            }
+        });
+
+        // 捏合手势
+        this.gestureRecognizer.on('pinch', (data) => {
+            console.log('捏合手势:', data.type, data.scale);
+        });
+
+        // 双击手势
+        this.gestureRecognizer.on('doubletap', (data) => {
+            console.log('双击:', data);
+        });
+
+        // 长按手势
+        this.gestureRecognizer.on('longpress', (data) => {
+            console.log('长按:', data);
+        });
     }
 }
 

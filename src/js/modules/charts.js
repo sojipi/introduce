@@ -1,12 +1,96 @@
 export class ChartManager {
     constructor() {
         this.charts = {};
-        this.init();
+        this.allData = null;
+        this.isLoading = false;
+        this.isLoaded = false;
     }
 
-    init() {
+    async init() {
+        if (this.isLoading || this.isLoaded) {
+            return;
+        }
+
+        // 如果已经有数据，直接初始化图表
+        if (this.allData && this.allData.awards) {
+            this.initializeCharts();
+            this.isLoaded = true;
+            return;
+        }
+
+        await this.loadAllData();
+        this.initializeCharts();
+        this.isLoaded = true;
+    }
+
+    // 从统一接口或缓存获取数据
+    async loadAllData() {
+        if (this.isLoading || this.isLoaded) {
+            return;
+        }
+
+        this.isLoading = true;
+
+        try {
+            console.log('🔄 图表模块：获取数据...');
+
+            // 检查是否已有缓存数据
+            if (window.skillsManager && window.skillsManager.allData) {
+                console.log('✅ 图表模块：使用已缓存的数据');
+                this.allData = window.skillsManager.allData;
+                return;
+            }
+
+            // 检查是否有AwardsManager的数据
+            if (window.awardsManager && window.awardsManager.awards && window.awardsManager.isLoaded) {
+                console.log('✅ 图表模块：使用AwardsManager的数据');
+                this.allData = {
+                    awards: window.awardsManager.awards,
+                    skills: this.getDefaultSkillsData()
+                };
+                return;
+            }
+
+            // 从API获取awards数据
+            console.log('🏆 图表模块：从API获取awards数据...');
+            const awardsResponse = await fetch('/api/frontend/awards');
+            let awards = [];
+
+            if (awardsResponse.ok) {
+                const awardsResult = await awardsResponse.json();
+                if (awardsResult.success && awardsResult.data) {
+                    awards = awardsResult.data;
+                    console.log('✅ 图表模块：成功获取awards数据', awards.length, '条');
+                } else {
+                    console.log('⚠️ 图表模块：awards API返回空数据');
+                }
+            } else {
+                console.log('⚠️ 图表模块：awards API请求失败');
+            }
+
+            this.allData = {
+                awards: awards,
+                skills: this.getDefaultSkillsData()
+            };
+        } catch (error) {
+            console.log('⚠️ 图表模块：加载数据失败:', error.message);
+            this.allData = {
+                awards: [],
+                skills: this.getDefaultSkillsData()
+            };
+        } finally {
+            this.isLoading = false;
+        }
+    }
+
+    initializeCharts() {
+        // 等待Chart.js库加载完成
+        if (typeof Chart === 'undefined') {
+            console.warn('Chart.js未加载，跳过图表初始化');
+            return;
+        }
+
         this.createAwardsChart();
-        this.setupChartAnimations();
     }
 
     createAwardsChart() {
@@ -15,34 +99,25 @@ export class ChartManager {
 
         const ctx = canvas.getContext('2d');
 
-        // 获奖数据
-        const awardsData = {
-            labels: ['金奖', '银奖', '铜奖', '优秀奖', '参与奖'],
-            datasets: [{
-                label: '获奖数量',
-                data: [3, 2, 4, 6, 3],
-                backgroundColor: [
-                    'rgba(255, 215, 0, 0.8)',      // 金色
-                    'rgba(192, 192, 192, 0.8)',    // 银色
-                    'rgba(205, 127, 50, 0.8)',     // 铜色
-                    'rgba(0, 212, 255, 0.8)',      // 蓝色
-                    'rgba(76, 175, 80, 0.8)'       // 绿色
-                ],
-                borderColor: [
-                    'rgba(255, 215, 0, 1)',
-                    'rgba(192, 192, 192, 1)',
-                    'rgba(205, 127, 50, 1)',
-                    'rgba(0, 212, 255, 1)',
-                    'rgba(76, 175, 80, 1)'
-                ],
-                borderWidth: 2,
-                hoverOffset: 10
-            }]
-        };
+        // 处理获奖数据
+        const awardsData = this.processAwardsData();
 
-        const config = {
+        this.charts.awards = new Chart(ctx, {
             type: 'doughnut',
-            data: awardsData,
+            data: {
+                labels: awardsData.labels,
+                datasets: [{
+                    data: awardsData.values,
+                    backgroundColor: [
+                        '#FFD700', // 金奖
+                        '#C0C0C0', // 银奖
+                        '#CD7F32', // 铜奖
+                        '#4FACFE'  // 其他
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
@@ -50,26 +125,20 @@ export class ChartManager {
                     legend: {
                         position: 'bottom',
                         labels: {
-                            color: '#ffffff',
+                            color: '#fff',
+                            padding: 20,
                             font: {
                                 size: 12
-                            },
-                            padding: 20,
-                            usePointStyle: true
+                            }
                         }
                     },
                     tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        titleColor: '#ffffff',
-                        bodyColor: '#ffffff',
-                        borderColor: '#00d4ff',
-                        borderWidth: 1,
                         callbacks: {
                             label: function (context) {
                                 const label = context.label || '';
                                 const value = context.parsed;
                                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                const percentage = ((value / total) * 100).toFixed(1);
+                                const percentage = Math.round((value / total) * 100);
                                 return `${label}: ${value} (${percentage}%)`;
                             }
                         }
@@ -77,354 +146,95 @@ export class ChartManager {
                 },
                 animation: {
                     animateRotate: true,
-                    animateScale: true,
-                    duration: 2000,
-                    easing: 'easeOutCubic'
-                },
-                elements: {
-                    arc: {
-                        borderWidth: 2
-                    }
+                    duration: 2000
                 }
-            }
-        };
-
-        this.charts.awards = new Chart(ctx, config);
-
-        // 添加点击事件
-        canvas.addEventListener('click', (event) => {
-            const points = this.charts.awards.getElementsAtEventForMode(
-                event, 'nearest', { intersect: true }, true
-            );
-
-            if (points.length) {
-                const firstPoint = points[0];
-                const label = this.charts.awards.data.labels[firstPoint.index];
-                const value = this.charts.awards.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];
-
-                this.showAwardDetails(label, value);
             }
         });
     }
 
-    showAwardDetails(awardType, count) {
-        // 创建详情弹窗
-        const modal = document.createElement('div');
-        modal.className = 'award-details-modal';
-        modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        `;
+    processAwardsData() {
+        if (!this.allData || !this.allData.awards || this.allData.awards.length === 0) {
+            return {
+                labels: ['暂无数据'],
+                values: [1]
+            };
+        }
 
-        const content = document.createElement('div');
-        content.style.cssText = `
-            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
-            padding: 2rem;
-            border-radius: 15px;
-            color: white;
-            text-align: center;
-            border: 1px solid rgba(0, 212, 255, 0.3);
-            transform: scale(0.8);
-            transition: transform 0.3s ease;
-        `;
+        const awards = this.allData.awards;
+        const counts = {
+            gold: 0,
+            silver: 0,
+            bronze: 0,
+            other: 0
+        };
 
-        const awardDetails = this.getAwardDetails(awardType);
-
-        content.innerHTML = `
-            <div style="font-size: 3rem; margin-bottom: 1rem;">${awardDetails.icon}</div>
-            <h3 style="color: #00d4ff; margin-bottom: 1rem;">${awardType}</h3>
-            <p style="font-size: 2rem; font-weight: bold; margin-bottom: 1rem; color: ${awardDetails.color};">${count} 个</p>
-            <div style="margin-bottom: 1.5rem;">
-                ${awardDetails.competitions.map(comp =>
-            `<div style="margin: 0.5rem 0; padding: 0.5rem; background: rgba(255,255,255,0.1); border-radius: 8px;">
-                        ${comp}
-                    </div>`
-        ).join('')}
-            </div>
-            <button onclick="this.parentElement.parentElement.remove()" 
-                    style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer;">
-                关闭
-            </button>
-        `;
-
-        modal.appendChild(content);
-        document.body.appendChild(modal);
-
-        // 显示动画
-        setTimeout(() => {
-            modal.style.opacity = '1';
-            content.style.transform = 'scale(1)';
-        }, 10);
-
-        // 点击背景关闭
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.remove();
-            }
+        awards.forEach(award => {
+            const level = award.level || 'other';
+            counts[level] = (counts[level] || 0) + 1;
         });
-    }
 
-    getAwardDetails(awardType) {
-        const details = {
-            '金奖': {
-                icon: '🏆',
-                color: '#ffd700',
-                competitions: [
-                    '全国大学生程序设计竞赛 - 2023年',
-                    'ACM-ICPC国际赛 - 2023年',
-                    '谷歌编程挑战赛 - 2024年'
-                ]
-            },
-            '银奖': {
-                icon: '🥈',
-                color: '#c0c0c0',
-                competitions: [
-                    '互联网+创新创业大赛 - 2023年',
-                    '全国软件设计大赛 - 2024年'
-                ]
-            },
-            '铜奖': {
-                icon: '🥉',
-                color: '#cd7f32',
-                competitions: [
-                    '蓝桥杯软件设计大赛 - 2022年',
-                    'Hackathon黑客马拉松 - 2023年',
-                    'AI创新应用大赛 - 2023年',
-                    '开源贡献者大会 - 2024年'
-                ]
-            },
-            '优秀奖': {
-                icon: '🎖️',
-                color: '#00d4ff',
-                competitions: [
-                    '数学建模竞赛 - 2022年',
-                    '创新创业训练计划 - 2023年',
-                    '计算机设计大赛 - 2023年',
-                    '电子设计竞赛 - 2024年',
-                    '网络安全竞赛 - 2024年',
-                    '数据挖掘竞赛 - 2024年'
-                ]
-            },
-            '参与奖': {
-                icon: '🏅',
-                color: '#4caf50',
-                competitions: [
-                    '区域编程竞赛 - 2022年',
-                    '校际算法竞赛 - 2023年',
-                    '技术分享大会 - 2024年'
-                ]
-            }
-        };
+        const labels = [];
+        const values = [];
 
-        return details[awardType] || {
-            icon: '🏅',
-            color: '#888888',
-            competitions: ['暂无详细信息']
-        };
-    }
+        if (counts.gold > 0) {
+            labels.push('金奖');
+            values.push(counts.gold);
+        }
+        if (counts.silver > 0) {
+            labels.push('银奖');
+            values.push(counts.silver);
+        }
+        if (counts.bronze > 0) {
+            labels.push('铜奖');
+            values.push(counts.bronze);
+        }
+        if (counts.other > 0) {
+            labels.push('其他');
+            values.push(counts.other);
+        }
 
-    setupChartAnimations() {
-        // 图表进入视口时的动画
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const chartId = entry.target.id;
-                    if (this.charts[chartId.replace('-chart', '')]) {
-                        this.animateChart(chartId.replace('-chart', ''));
-                    }
-                }
-            });
-        }, { threshold: 0.5 });
-
-        // 观察所有图表
-        Object.keys(this.charts).forEach(chartKey => {
-            const canvas = document.getElementById(`${chartKey}-chart`);
-            if (canvas) {
-                observer.observe(canvas);
-            }
-        });
-    }
-
-    animateChart(chartKey) {
-        const chart = this.charts[chartKey];
-        if (!chart) return;
-
-        // 重新播放动画
-        chart.reset();
-        chart.update('active');
-    }
-
-    // 创建技能雷达图
-    createSkillsRadarChart(canvasId, skillsData) {
-        const canvas = document.getElementById(canvasId);
-        if (!canvas) return;
-
-        const ctx = canvas.getContext('2d');
-
-        const config = {
-            type: 'radar',
-            data: {
-                labels: skillsData.labels,
-                datasets: [{
-                    label: '技能水平',
-                    data: skillsData.values,
-                    backgroundColor: 'rgba(0, 212, 255, 0.2)',
-                    borderColor: 'rgba(0, 212, 255, 1)',
-                    borderWidth: 2,
-                    pointBackgroundColor: 'rgba(0, 212, 255, 1)',
-                    pointBorderColor: '#fff',
-                    pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: 'rgba(0, 212, 255, 1)'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                },
-                scales: {
-                    r: {
-                        beginAtZero: true,
-                        max: 100,
-                        ticks: {
-                            color: '#888888',
-                            backdropColor: 'transparent'
-                        },
-                        grid: {
-                            color: 'rgba(255, 255, 255, 0.1)'
-                        },
-                        angleLines: {
-                            color: 'rgba(255, 255, 255, 0.1)'
-                        },
-                        pointLabels: {
-                            color: '#ffffff',
-                            font: {
-                                size: 12
-                            }
-                        }
-                    }
-                },
-                animation: {
-                    duration: 2000,
-                    easing: 'easeOutCubic'
-                }
-            }
-        };
-
-        this.charts[canvasId.replace('-chart', '')] = new Chart(ctx, config);
-    }
-
-    // 创建时间线图表
-    createTimelineChart(canvasId, timelineData) {
-        const canvas = document.getElementById(canvasId);
-        if (!canvas) return;
-
-        const ctx = canvas.getContext('2d');
-
-        const config = {
-            type: 'line',
-            data: {
-                labels: timelineData.dates,
-                datasets: [{
-                    label: '参赛活动',
-                    data: timelineData.activities,
-                    backgroundColor: 'rgba(0, 212, 255, 0.1)',
-                    borderColor: 'rgba(0, 212, 255, 1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: 'rgba(0, 212, 255, 1)',
-                    pointBorderColor: '#ffffff',
-                    pointBorderWidth: 2,
-                    pointRadius: 6,
-                    pointHoverRadius: 8
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        labels: {
-                            color: '#ffffff'
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        titleColor: '#ffffff',
-                        bodyColor: '#ffffff',
-                        borderColor: '#00d4ff',
-                        borderWidth: 1
-                    }
-                },
-                scales: {
-                    x: {
-                        ticks: {
-                            color: '#888888'
-                        },
-                        grid: {
-                            color: 'rgba(255, 255, 255, 0.1)'
-                        }
-                    },
-                    y: {
-                        ticks: {
-                            color: '#888888'
-                        },
-                        grid: {
-                            color: 'rgba(255, 255, 255, 0.1)'
-                        }
-                    }
-                },
-                animation: {
-                    duration: 2000,
-                    easing: 'easeOutCubic'
-                }
-            }
-        };
-
-        this.charts[canvasId.replace('-chart', '')] = new Chart(ctx, config);
+        return { labels, values };
     }
 
     // 更新图表数据
-    updateChartData(chartKey, newData) {
-        const chart = this.charts[chartKey];
-        if (!chart) return;
+    updateChartsData(newData) {
+        this.allData = newData;
 
-        chart.data = newData;
-        chart.update('active');
-    }
-
-    // 销毁图表
-    destroyChart(chartKey) {
-        const chart = this.charts[chartKey];
-        if (chart) {
-            chart.destroy();
-            delete this.charts[chartKey];
+        if (this.charts.awards) {
+            const awardsData = this.processAwardsData();
+            this.charts.awards.data.labels = awardsData.labels;
+            this.charts.awards.data.datasets[0].data = awardsData.values;
+            this.charts.awards.update();
         }
     }
 
-    // 导出图表为图片
-    exportChart(chartKey, filename = 'chart.png') {
-        const chart = this.charts[chartKey];
-        if (!chart) return;
+    // 销毁所有图表
+    destroyCharts() {
+        Object.values(this.charts).forEach(chart => {
+            if (chart && typeof chart.destroy === 'function') {
+                chart.destroy();
+            }
+        });
+        this.charts = {};
+    }
 
-        const url = chart.toBase64Image();
-        const link = document.createElement('a');
-        link.download = filename;
-        link.href = url;
-        link.click();
+    getDefaultSkillsData() {
+        return {
+            frontend: {
+                title: '前端技术',
+                skills: [
+                    { name: 'React', level: 95 },
+                    { name: 'Vue.js', level: 90 },
+                    { name: 'JavaScript', level: 98 }
+                ]
+            },
+            backend: {
+                title: '后端技术',
+                skills: [
+                    { name: 'Node.js', level: 88 },
+                    { name: 'Python', level: 85 }
+                ]
+            }
+        };
     }
 }

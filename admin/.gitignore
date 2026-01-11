@@ -94,7 +94,6 @@ Thumbs.db
 
 # 上传文件
 uploads/
-admin/uploads/
 
 # 备份文件
 *.backup
@@ -102,6 +101,3 @@ admin/uploads/
 
 # PM2
 .pm2/
-
-.claude/
-.vscode/

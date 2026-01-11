@@ -1,271 +1,183 @@
 export class TimelineManager {
     constructor() {
-        this.timelineData = this.getTimelineData();
-        this.init();
+        this.timeline = [];
+        this.allData = null;
+        this.isLoaded = false;
+        // 不在构造函数中调用init，改为懒加载
     }
 
-    init() {
+    async init() {
+        if (this.isLoaded) {
+            console.log('✅ 时间线数据已加载，跳过重复加载');
+            return;
+        }
+
+        await this.loadAllData();
         this.renderTimeline();
-        this.setupScrollAnimation();
+        this.isLoaded = true;
     }
 
-    getTimelineData() {
+    // 从分段接口获取时间线数据
+    async loadAllData() {
+        try {
+            console.log('🔄 时间线模块：从分段接口获取数据...');
+
+            const response = await fetch('/api/frontend/timeline');
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    console.log('✅ 时间线模块：成功获取数据');
+                    this.timeline = data.data;
+
+                    // 将时间线数据存储到全局
+                    if (!window.showcaseData) {
+                        window.showcaseData = {};
+                    }
+                    window.showcaseData.timeline = data.data;
+                } else {
+                    console.warn('时间线模块：API返回数据格式错误');
+                    this.timeline = this.getDefaultTimelineData();
+                }
+            } else {
+                console.warn('时间线模块：API请求失败，状态码:', response.status);
+                this.timeline = this.getDefaultTimelineData();
+            }
+        } catch (error) {
+            console.warn('时间线模块：加载数据失败，使用默认数据:', error);
+            this.timeline = this.getDefaultTimelineData();
+        }
+    }
+
+    renderTimeline() {
+        const container = document.querySelector('.timeline-items');
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        this.timeline.forEach((item, index) => {
+            const timelineItem = this.createTimelineItem(item, index);
+            container.appendChild(timelineItem);
+        });
+
+        // 添加动画
+        this.animateTimelineItems();
+    }
+
+    createTimelineItem(item, index) {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'timeline-item';
+        itemDiv.style.opacity = '0';
+        itemDiv.style.transform = 'translateY(30px)';
+
+        const statusClass = this.getStatusClass(item.status);
+        const statusText = this.getStatusText(item.status);
+
+        itemDiv.innerHTML = `
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+                <div class="timeline-date">${this.formatDate(item.date)}</div>
+                <h4>${item.title}</h4>
+                <p>${item.description || '暂无描述'}</p>
+                <span class="timeline-status ${statusClass}">${statusText}</span>
+            </div>
+        `;
+
+        return itemDiv;
+    }
+
+    getStatusClass(status) {
+        const statusMap = {
+            completed: 'completed',
+            ongoing: 'ongoing',
+            upcoming: 'upcoming'
+        };
+        return statusMap[status] || 'upcoming';
+    }
+
+    getStatusText(status) {
+        const statusMap = {
+            completed: '已完成',
+            ongoing: '进行中',
+            upcoming: '即将开始'
+        };
+        return statusMap[status] || '即将开始';
+    }
+
+    formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('zh-CN', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    }
+
+    animateTimelineItems() {
+        const items = document.querySelectorAll('.timeline-item');
+
+        items.forEach((item, index) => {
+            setTimeout(() => {
+                item.style.transition = 'all 0.6s ease';
+                item.style.opacity = '1';
+                item.style.transform = 'translateY(0)';
+            }, index * 200);
+        });
+    }
+
+    getDefaultTimelineData() {
         return [
             {
-                date: '2024年3月',
-                title: '全国大学生程序设计竞赛',
-                description: '算法优化和数据结构设计竞赛，获得金奖',
-                status: 'completed',
-                type: 'award'
+                id: '1',
+                date: '2024-03-15',
+                title: 'ACM程序设计竞赛',
+                description: '参加区域性程序设计竞赛，展示算法和编程能力',
+                status: 'upcoming',
+                type: 'competition'
             },
             {
-                date: '2024年5月',
-                title: '互联网+创新创业大赛',
-                description: '全栈开发项目展示，商业模式创新',
-                status: 'completed',
-                type: 'award'
-            },
-            {
-                date: '2024年7月',
-                title: 'Google Summer of Code',
-                description: '参与开源项目开发，贡献核心功能模块',
-                status: 'completed',
-                type: 'project'
-            },
-            {
-                date: '2024年9月',
-                title: 'ACM-ICPC区域赛',
-                description: '国际大学生程序设计竞赛区域选拔赛',
+                id: '2',
+                date: '2023-11-20',
+                title: '互联网+创业大赛决赛',
+                description: '项目成功进入全国决赛阶段，获得银奖',
                 status: 'completed',
                 type: 'competition'
             },
             {
-                date: '2024年11月',
+                id: '3',
+                date: '2023-09-10',
+                title: '技术分享会',
+                description: '在学校举办前端技术分享会，分享React最佳实践',
+                status: 'completed',
+                type: 'event'
+            },
+            {
+                id: '4',
+                date: '2023-06-15',
                 title: '蓝桥杯软件设计大赛',
-                description: 'Java开发和算法设计竞赛，获得一等奖',
+                description: '参加蓝桥杯Java组比赛，获得省级一等奖',
                 status: 'completed',
-                type: 'award'
-            },
-            {
-                date: '2024年12月',
-                title: 'Hackathon黑客马拉松',
-                description: '48小时创新开发挑战，团队协作项目',
-                status: 'ongoing',
-                type: 'competition'
-            },
-            {
-                date: '2025年2月',
-                title: '全国软件设计大赛',
-                description: '软件工程和系统设计竞赛报名准备中',
-                status: 'upcoming',
-                type: 'competition'
-            },
-            {
-                date: '2025年4月',
-                title: 'AI创新应用大赛',
-                description: '人工智能和机器学习应用开发竞赛',
-                status: 'upcoming',
-                type: 'competition'
-            },
-            {
-                date: '2025年6月',
-                title: '开源贡献者大会',
-                description: '开源项目展示和技术分享',
-                status: 'upcoming',
-                type: 'project'
-            },
-            {
-                date: '2025年8月',
-                title: '国际编程竞赛',
-                description: '世界级编程竞赛，算法和数据结构挑战',
-                status: 'upcoming',
                 type: 'competition'
             }
         ];
     }
 
-    renderTimeline() {
-        const timelineContainer = document.querySelector('.timeline-items');
-
-        this.timelineData.forEach((item, index) => {
-            const timelineItem = this.createTimelineItem(item, index);
-            timelineContainer.appendChild(timelineItem);
-        });
+    // 获取时间线数据
+    getTimelineData() {
+        return this.timeline;
     }
 
-    createTimelineItem(item, index) {
-        const timelineItem = document.createElement('div');
-        timelineItem.className = 'timeline-item';
-        timelineItem.setAttribute('data-aos', index % 2 === 0 ? 'fade-right' : 'fade-left');
-        timelineItem.setAttribute('data-aos-delay', (index * 100).toString());
-
-        // 获取状态样式
-        const statusConfig = this.getStatusConfig(item.status);
-        const typeIcon = this.getTypeIcon(item.type);
-
-        timelineItem.innerHTML = `
-            <div class="timeline-dot" style="background: ${statusConfig.color};">
-                <i class="${typeIcon}" style="font-size: 0.8rem;"></i>
-            </div>
-            <div class="timeline-content">
-                <div class="timeline-date">${item.date}</div>
-                <h4>${item.title}</h4>
-                <p>${item.description}</p>
-                <span class="timeline-status ${item.status}">${statusConfig.text}</span>
-            </div>
-        `;
-
-        // 添加悬停效果
-        timelineItem.addEventListener('mouseenter', () => {
-            timelineItem.style.transform = 'scale(1.02)';
-            timelineItem.style.transition = 'transform 0.3s ease';
-        });
-
-        timelineItem.addEventListener('mouseleave', () => {
-            timelineItem.style.transform = 'scale(1)';
-        });
-
-        return timelineItem;
+    // 添加新的时间线事件
+    addTimelineItem(item) {
+        this.timeline.unshift(item);
+        this.renderTimeline();
     }
 
-    getStatusConfig(status) {
-        const configs = {
-            completed: {
-                text: '已完成',
-                color: '#4caf50'
-            },
-            ongoing: {
-                text: '进行中',
-                color: '#ffc107'
-            },
-            upcoming: {
-                text: '即将开始',
-                color: '#2196f3'
-            }
-        };
-        return configs[status] || configs.upcoming;
-    }
-
-    getTypeIcon(type) {
-        const icons = {
-            award: 'fas fa-trophy',
-            competition: 'fas fa-medal',
-            project: 'fas fa-code'
-        };
-        return icons[type] || 'fas fa-calendar';
-    }
-
-    setupScrollAnimation() {
-        // 时间线滚动动画
-        const timelineLine = document.querySelector('.timeline-line');
-        const timelineItems = document.querySelectorAll('.timeline-item');
-
-        const animateTimeline = () => {
-            const scrollTop = window.pageYOffset;
-            const windowHeight = window.innerHeight;
-            const timelineTop = document.querySelector('.timeline').offsetTop;
-
-            // 计算时间线可见程度
-            const timelineProgress = Math.max(0, Math.min(1,
-                (scrollTop + windowHeight - timelineTop) /
-                (document.querySelector('.timeline').offsetHeight)
-            ));
-
-            // 更新时间线长度
-            if (timelineLine) {
-                timelineLine.style.height = `${timelineProgress * 100}%`;
-            }
-
-            // 激活可见的时间线项目
-            timelineItems.forEach((item, index) => {
-                const itemTop = item.offsetTop;
-                const itemProgress = (scrollTop + windowHeight - itemTop) / windowHeight;
-
-                if (itemProgress > 0.5) {
-                    item.classList.add('active');
-
-                    // 添加计数动画
-                    const dot = item.querySelector('.timeline-dot');
-                    if (dot && !dot.classList.contains('animated')) {
-                        dot.classList.add('animated');
-                        dot.style.animation = 'pulse 0.6s ease';
-                    }
-                }
-            });
-        };
-
-        // 节流滚动事件
-        let ticking = false;
-        const handleScroll = () => {
-            if (!ticking) {
-                requestAnimationFrame(() => {
-                    animateTimeline();
-                    ticking = false;
-                });
-                ticking = true;
-            }
-        };
-
-        window.addEventListener('scroll', handleScroll);
-
-        // 初始调用
-        animateTimeline();
-    }
-
-    // 添加筛选功能
-    filterByStatus(status) {
-        const items = document.querySelectorAll('.timeline-item');
-
-        items.forEach(item => {
-            const itemStatus = item.querySelector('.timeline-status').classList;
-
-            if (status === 'all' || itemStatus.contains(status)) {
-                item.style.display = 'flex';
-                item.style.opacity = '1';
-            } else {
-                item.style.opacity = '0.3';
-            }
-        });
-    }
-
-    // 添加搜索功能
-    searchTimeline(query) {
-        const items = document.querySelectorAll('.timeline-item');
-        const searchTerm = query.toLowerCase();
-
-        items.forEach(item => {
-            const title = item.querySelector('h4').textContent.toLowerCase();
-            const description = item.querySelector('p').textContent.toLowerCase();
-
-            if (title.includes(searchTerm) || description.includes(searchTerm)) {
-                item.style.display = 'flex';
-                item.style.opacity = '1';
-            } else {
-                item.style.opacity = '0.3';
-            }
-        });
-    }
-
-    // 导出时间线数据
-    exportTimeline() {
-        const data = {
-            timeline: this.timelineData,
-            exportDate: new Date().toISOString(),
-            totalEvents: this.timelineData.length,
-            completedEvents: this.timelineData.filter(item => item.status === 'completed').length,
-            upcomingEvents: this.timelineData.filter(item => item.status === 'upcoming').length
-        };
-
-        const blob = new Blob([JSON.stringify(data, null, 2)], {
-            type: 'application/json'
-        });
-
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'timeline-data.json';
-        a.click();
-
-        URL.revokeObjectURL(url);
+    // 更新时间线事件状态
+    updateTimelineStatus(id, status) {
+        const item = this.timeline.find(t => t.id === id);
+        if (item) {
+            item.status = status;
+            this.renderTimeline();
+        }
     }
 }

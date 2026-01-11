@@ -1,0 +1,27 @@
+# 阿里云函数计算配置文件
+ROSTemplateFormatVersion: '2015-09-01'
+Transform: 'Aliyun::Serverless-2018-04-03'
+Resources:
+  kv-service:
+    Type: 'Aliyun::Serverless::Service'
+    Properties:
+      Description: 'KV存储云函数服务'
+    kv-function:
+      Type: 'Aliyun::Serverless::Function'
+      Properties:
+        Description: '通用KV存储函数'
+        CodeUri: './'
+        Handler: 'index.handler'
+        Runtime: nodejs18
+        Timeout: 30
+        MemorySize: 512
+        EnvironmentVariables:
+          ALIYUN_KV_ENDPOINT: 'your-kv-endpoint'
+          ALIYUN_ACCESS_KEY_ID: 'your-access-key-id'
+          ALIYUN_ACCESS_KEY_SECRET: 'your-access-key-secret'
+      Events:
+        httpTrigger:
+          Type: HTTP
+          Properties:
+            AuthType: ANONYMOUS
+            Methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
