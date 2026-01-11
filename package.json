@@ -12,7 +12,9 @@
         "init-admin": "node admin/scripts/init-admin.js",
         "start": "node admin-server.js",
         "start:full": "npm run init-admin && npm start",
-        "start:dev": "npm run init-admin && npm run admin-dev"
+        "start:dev": "npm run init-admin && npm run admin-dev",
+        "deploy:prepare": "node scripts/prepare-esa-deploy.js",
+        "deploy:esa": "npm run deploy:prepare && echo '✅ 部署文件已准备好，请上传 deploy/ 目录到 ESA'"
     },
     "devDependencies": {
         "nodemon": "^3.0.1",
