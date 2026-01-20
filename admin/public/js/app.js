@@ -279,6 +279,18 @@ const app = createApp(App);
 app.use(router);
 app.use(ElementPlus);
 
+// 配置全局 Axios 拦截器
+axios.interceptors.request.use(config => {
+    // 尝试获取 token，优先使用 admin_token，兼容旧版 token
+    const token = localStorage.getItem('admin_token') || localStorage.getItem('token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+}, error => {
+    return Promise.reject(error);
+});
+
 // 全局属性
 app.config.globalProperties.store = store;
 app.config.globalProperties.utils = utils;
