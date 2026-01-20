@@ -104,7 +104,7 @@ const Login = {
 
                 this.loading = true;
 
-                const response = await axios.post('/api/auth/login', {
+                const response = await axios.post('/auth/login', {
                     username: this.form.username,
                     password: this.form.password
                 });
