@@ -460,7 +460,7 @@ const Timeline = {
                 const response = await axios.get('/timeline', { params });
 
                 if (response.data.success) {
-                    this.events = response.data.data.events;
+                    this.events = response.data.data.timeline; // 修复：后端返回的 key 是 timeline，不是 events
                     this.pagination = response.data.data.pagination;
                 }
             } catch (error) {
