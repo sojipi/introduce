@@ -4,7 +4,7 @@
  */
 
 const KV_BASE_URL = 'https://kv.zenmb.com/kv/';
-const KV_NAMESPACE = 'intro';
+const KV_NAMESPACE = 'default';
 
 // KV 操作
 async function kvGet(key) {
@@ -78,16 +78,130 @@ async function handleLogin(request) {
     });
 }
 
+// 统计处理函数
+async function handleProjectStats(request) {
+    const user = authenticateToken(request);
+    if (!user) return jsonResponse({ success: false, message: '未授权' }, 401);
+
+    const result = await kvGet('projects:list');
+    let projects = result.success && result.data ? result.data : [];
+    if (typeof projects === 'string') projects = JSON.parse(projects);
+
+    const categoryStats = projects.reduce((stats, project) => {
+        const category = project.category || 'other';
+        stats[category] = (stats[category] || 0) + 1;
+        return stats;
+    }, {});
+
+    return jsonResponse({
+        success: true,
+        data: {
+            total: projects.length,
+            categoryStats
+        }
+    });
+}
+
+async function handleAwardStats(request) {
+    const user = authenticateToken(request);
+    if (!user) return jsonResponse({ success: false, message: '未授权' }, 401);
+
+    const result = await kvGet('awards:list');
+    let awards = result.success && result.data ? result.data : [];
+    if (typeof awards === 'string') awards = JSON.parse(awards);
+
+    const typeStats = awards.reduce((stats, award) => {
+        const type = award.type || 'unknown';
+        stats[type] = (stats[type] || 0) + 1;
+        return stats;
+    }, {});
+
+    return jsonResponse({
+        success: true,
+        data: {
+            total: awards.length,
+            typeStats
+        }
+    });
+}
+
+async function handleSkillStats(request) {
+    const user = authenticateToken(request);
+    if (!user) return jsonResponse({ success: false, message: '未授权' }, 401);
+
+    const result = await kvGet('skills:list');
+    let skills = result.success && result.data ? result.data : [];
+    if (typeof skills === 'string') skills = JSON.parse(skills);
+
+    const categoryStats = skills.reduce((stats, skill) => {
+        const category = skill.category || 'other';
+        stats[category] = (stats[category] || 0) + 1;
+        return stats;
+    }, {});
+
+    const levelDistribution = {
+        beginner: skills.filter(s => s.level < 30).length,
+        intermediate: skills.filter(s => s.level >= 30 && s.level < 70).length,
+        advanced: skills.filter(s => s.level >= 70 && s.level < 90).length,
+        expert: skills.filter(s => s.level >= 90).length
+    };
+
+    const averageLevel = skills.length > 0
+        ? Math.round(skills.reduce((sum, skill) => sum + parseInt(skill.level || 0), 0) / skills.length)
+        : 0;
+
+    const topSkills = skills
+        .filter(skill => skill.level >= 80)
+        .sort((a, b) => b.level - a.level)
+        .slice(0, 10);
+
+    return jsonResponse({
+        success: true,
+        data: {
+            total: skills.length,
+            categoryStats,
+            levelDistribution,
+            averageLevel,
+            topSkills
+        }
+    });
+}
+
 // 通用 CRUD 处理
 async function handleList(type, request) {
     const user = authenticateToken(request);
     if (!user) return jsonResponse({ success: false, message: '未授权' }, 401);
 
-    const result = await kvGet(`${type}:list`);
-    let data = result.success && result.data ? result.data : [];
-    if (typeof data === 'string') data = JSON.parse(data);
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '1');
+    const limit = parseInt(url.searchParams.get('limit') || '10');
+    const category = url.searchParams.get('category');
 
-    return jsonResponse({ success: true, data });
+    const result = await kvGet(`${type}:list`);
+    let list = result.success && result.data ? result.data : [];
+    if (typeof list === 'string') list = JSON.parse(list);
+
+    // 过滤 (针对项目等)
+    if (category && category !== 'all') {
+        list = list.filter(item => item.category === category);
+    }
+
+    // 分页
+    const total = list.length;
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedList = list.slice(startIndex, endIndex);
+
+    const responseData = {};
+    responseData[type] = paginatedList;
+    responseData.pagination = {
+        current: page,
+        pageSize: limit,
+        total: total,
+        totalPages: Math.ceil(total / limit)
+    };
+
+    return jsonResponse({ success: true, data: responseData });
 }
 
 async function handleCreate(type, request) {
@@ -170,6 +284,11 @@ export default {
             if (path === '/api/auth/login') {
                 return await handleLogin(request);
             }
+
+            // 特殊统计接口路由 (必须在 ID 路由之前)
+            if (path === '/api/projects/stats/summary') return await handleProjectStats(request);
+            if (path === '/api/awards/stats/summary') return await handleAwardStats(request);
+            if (path === '/api/skills/stats/summary') return await handleSkillStats(request);
 
             const match = path.match(/^\/api\/(projects|skills|awards|timeline)(?:\/(\d+))?$/);
             if (match) {

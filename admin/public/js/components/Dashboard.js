@@ -181,10 +181,9 @@ const Dashboard = {
 
         async fetchSkillsStats() {
             try {
-                const response = await fetch('/api/skills/stats/summary');
-                if (response.ok) {
-                    const data = await response.json();
-                    return data.success ? data.data : null;
+                const response = await axios.get('/skills/stats/summary');
+                if (response.data.success) {
+                    return response.data.data;
                 }
             } catch (error) {
                 console.error('Fetch skills stats error:', error);
@@ -194,10 +193,9 @@ const Dashboard = {
 
         async fetchProjectsStats() {
             try {
-                const response = await fetch('/api/projects?page=1&limit=1');
-                if (response.ok) {
-                    const data = await response.json();
-                    return data.success ? { total: data.data.pagination?.total || 0 } : null;
+                const response = await axios.get('/projects?page=1&limit=1');
+                if (response.data.success) {
+                    return { total: response.data.data.pagination?.total || 0 };
                 }
             } catch (error) {
                 console.error('Fetch projects stats error:', error);
@@ -207,10 +205,9 @@ const Dashboard = {
 
         async fetchAwardsStats() {
             try {
-                const response = await fetch('/api/awards?page=1&limit=1');
-                if (response.ok) {
-                    const data = await response.json();
-                    return data.success ? { total: data.data.pagination?.total || 0 } : null;
+                const response = await axios.get('/awards?page=1&limit=1');
+                if (response.data.success) {
+                    return { total: response.data.data.pagination?.total || 0 };
                 }
             } catch (error) {
                 console.error('Fetch awards stats error:', error);
@@ -220,10 +217,9 @@ const Dashboard = {
 
         async fetchTimelineStats() {
             try {
-                const response = await fetch('/api/timeline?page=1&limit=1');
-                if (response.ok) {
-                    const data = await response.json();
-                    return data.success ? { total: data.data.pagination?.total || 0 } : null;
+                const response = await axios.get('/timeline?page=1&limit=1');
+                if (response.data.success) {
+                    return { total: response.data.data.pagination?.total || 0 };
                 }
             } catch (error) {
                 console.error('Fetch timeline stats error:', error);
