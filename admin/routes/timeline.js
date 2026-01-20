@@ -52,6 +52,71 @@ router.get('/', async (req, res) => {
     }
 });
 
+// 获取时间线统计（必须在 /:id 之前）
+router.get('/stats/summary', async (req, res) => {
+    try {
+        const timelineResult = await edgeStorage.get('timeline:list');
+        let events = [];
+
+        if (timelineResult.success && timelineResult.data) {
+            if (typeof timelineResult.data === 'string') {
+                try {
+                    events = JSON.parse(timelineResult.data);
+                } catch (error) {
+                    console.error('Failed to parse timeline data:', error);
+                }
+            } else {
+                events = timelineResult.data;
+            }
+        }
+
+        // 按状态统计
+        const statusStats = {
+            completed: events.filter(e => e.status === 'completed').length,
+            ongoing: events.filter(e => e.status === 'ongoing').length,
+            upcoming: events.filter(e => e.status === 'upcoming').length
+        };
+
+        // 按类型统计
+        const typeStats = events.reduce((stats, event) => {
+            const type = event.type || 'other';
+            stats[type] = (stats[type] || 0) + 1;
+            return stats;
+        }, {});
+
+        // 按年份统计
+        const yearStats = events.reduce((stats, event) => {
+            if (event.date) {
+                const year = new Date(event.date).getFullYear();
+                stats[year] = (stats[year] || 0) + 1;
+            }
+            return stats;
+        }, {});
+
+        // 最近的事件
+        const recentEvents = events
+            .sort((a, b) => new Date(b.date) - new Date(a.date))
+            .slice(0, 5);
+
+        res.json({
+            success: true,
+            data: {
+                total: events.length,
+                statusStats,
+                typeStats,
+                yearStats,
+                recentEvents
+            }
+        });
+    } catch (error) {
+        console.error('Get timeline stats error:', error);
+        res.status(500).json({
+            success: false,
+            message: '获取时间线统计失败'
+        });
+    }
+});
+
 // 获取单个时间线事件
 router.get('/:id', async (req, res) => {
     try {

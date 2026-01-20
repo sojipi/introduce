@@ -42,6 +42,34 @@ router.get('/', async (req, res) => {
     }
 });
 
+// 获取获奖统计（必须在 /:id 之前）
+router.get('/stats/summary', async (req, res) => {
+    try {
+        const awardsResult = await edgeStorage.get('awards:list');
+        const awards = awardsResult.data || [];
+
+        const typeStats = awards.reduce((stats, award) => {
+            const type = award.type || 'unknown';
+            stats[type] = (stats[type] || 0) + 1;
+            return stats;
+        }, {});
+
+        res.json({
+            success: true,
+            data: {
+                total: awards.length,
+                typeStats
+            }
+        });
+    } catch (error) {
+        console.error('Get award stats error:', error);
+        res.status(500).json({
+            success: false,
+            message: '获取获奖统计失败'
+        });
+    }
+});
+
 // 获取单个获奖记录
 router.get('/:id', async (req, res) => {
     try {
@@ -379,34 +407,6 @@ router.delete('/:id', authenticateToken, async (req, res) => {
         res.status(500).json({
             success: false,
             message: '删除获奖记录失败'
-        });
-    }
-});
-
-// 获取获奖统计
-router.get('/stats/summary', async (req, res) => {
-    try {
-        const awardsResult = await edgeStorage.get('awards:list');
-        const awards = awardsResult.data || [];
-
-        const typeStats = awards.reduce((stats, award) => {
-            const type = award.type || 'unknown';
-            stats[type] = (stats[type] || 0) + 1;
-            return stats;
-        }, {});
-
-        res.json({
-            success: true,
-            data: {
-                total: awards.length,
-                typeStats
-            }
-        });
-    } catch (error) {
-        console.error('Get award stats error:', error);
-        res.status(500).json({
-            success: false,
-            message: '获取获奖统计失败'
         });
     }
 });

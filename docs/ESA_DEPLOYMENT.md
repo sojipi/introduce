@@ -68,25 +68,96 @@ esa login
 esa deploy deploy/
 ```
 
-### 3. 配置路由规则
+### 3. 配置路由规则（⚠️ 重要！必须配置）
 
-在 ESA 控制台配置以下路由：
+**访问 `/admin` 返回 404 的原因**：ESA 默认只查找对应路径的文件，访问 `/admin` 时会查找 `admin` 文件（而不是 `admin/index.html`），导致 404。
 
-| 路径 | 目标 | 说明 |
-|------|------|------|
-| `/` | `index.html` | 主页 |
-| `/admin` | `admin/index.html` | Admin 后台 |
-| `/admin/*` | `admin/index.html` | Admin 子路由 |
+在 ESA 控制台 → **边缘规则** → **添加规则**，配置以下路由：
 
-### 4. 配置 API 代理（可选）
-
-如果你的云函数地址不支持 CORS，可以在 ESA 配置代理：
-
+#### 规则 1：主页路由
 ```
-/api/* → https://your-cloudfunction-url.com/api/*
+规则名称: 主页路由
+匹配条件: 路径等于 /
+执行动作: 重写 URL
+目标路径: /index.html
 ```
 
-**注意**：如果云函数已经配置了 CORS，可以跳过这步，直接在前端代码中使用云函数地址。
+#### 规则 2：Admin 后台入口
+```
+规则名称: Admin 后台入口
+匹配条件: 路径等于 /admin
+执行动作: 重写 URL
+目标路径: /admin/index.html
+```
+
+#### 规则 3：Admin 子路由
+```
+规则名称: Admin 子路由
+匹配条件: 路径匹配 /admin/*
+执行动作: 重写 URL
+目标路径: /admin/index.html
+```
+
+**配置完成后**：
+1. 保存并发布规则
+2. 清除 ESA 缓存
+3. 访问 `https://me.zenmb.com/admin` 应该能正常显示
+
+详细配置说明请参考：[docs/ESA_ROUTING_CONFIG.md](./ESA_ROUTING_CONFIG.md)
+
+### 4. 配置 API 代理（⚠️ 重要！必须配置）
+
+**部署到 ESA 后，前端调用 `/api/frontend/*` 会返回 404**，因为 ESA 只能托管静态文件，无法运行 Node.js 服务器。
+
+你需要配置 API 路由代理，将前端 API 请求转发到云函数。
+
+#### 方案 A：部署云函数 + ESA 路由代理（推荐 ⭐）
+
+1. **部署前端 API 云函数**
+
+   将 `cloudfunction/frontend-api.js` 部署到阿里云 ESA 边缘函数：
+
+   - 函数名称：`frontend-api`
+   - 运行环境：JavaScript (ES Module)
+   - 配置：代码中已配置 `KV_NAMESPACE=tech-showcase`
+
+   部署后获得 URL，例如：
+   ```
+   https://your-domain.com/api/frontend/
+   ```
+
+   或者部署到 Cloudflare Workers 也可以。
+
+2. **在 ESA 配置路由规则**
+
+   在 ESA 控制台 → 边缘规则 → 添加规则：
+
+   ```
+   规则类型: URL 重写 或 反向代理
+   匹配条件: 路径匹配 /api/frontend/*
+   目标地址: https://你的云函数URL/$1
+   ```
+
+   配置示例：
+   ```
+   /api/frontend/skills → https://1234567890.cn-hangzhou.fc.aliyuncs.com/.../skills
+   /api/frontend/projects → https://1234567890.cn-hangzhou.fc.aliyuncs.com/.../projects
+   /api/frontend/awards → https://1234567890.cn-hangzhou.fc.aliyuncs.com/.../awards
+   /api/frontend/timeline → https://1234567890.cn-hangzhou.fc.aliyuncs.com/.../timeline
+   ```
+
+#### 方案 B：修改前端代码直接调用云函数
+
+如果不想配置 ESA 路由，可以修改前端代码：
+
+1. 编辑 `src/js/utils/kvClient.js`，更新云函数 URL
+2. 修改前端模块使用新的 API 客户端
+3. 重新构建：`npm run build`
+4. 重新部署：`npm run deploy:esa`
+
+详细步骤请参考：[docs/API_DEPLOYMENT.md](./API_DEPLOYMENT.md)
+
+**⚠️ 如果不配置 API 路由，前端将无法获取数据！**
 
 ### 5. 配置 HTTPS 和域名
 

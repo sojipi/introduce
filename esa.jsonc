@@ -1,0 +1,9 @@
+{
+  "name": "tech-showcase",
+  "installCommand": "npm install",
+  "buildCommand": "npm run deploy:prepare",
+  "assets": {
+    "directory": "./deploy",
+    "notFoundStrategy": "singlePageApplication"
+  }
+}

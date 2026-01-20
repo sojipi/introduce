@@ -42,6 +42,57 @@ router.get('/', async (req, res) => {
     }
 });
 
+// 获取技能统计（必须在 /:id 之前）
+router.get('/stats/summary', async (req, res) => {
+    try {
+        const skillsResult = await edgeStorage.get('skills:list');
+        const skills = skillsResult.data || [];
+
+        // 按分类统计
+        const categoryStats = skills.reduce((stats, skill) => {
+            const category = skill.category || 'other';
+            stats[category] = (stats[category] || 0) + 1;
+            return stats;
+        }, {});
+
+        // 按等级分布统计
+        const levelDistribution = {
+            beginner: skills.filter(s => s.level < 30).length,
+            intermediate: skills.filter(s => s.level >= 30 && s.level < 70).length,
+            advanced: skills.filter(s => s.level >= 70 && s.level < 90).length,
+            expert: skills.filter(s => s.level >= 90).length
+        };
+
+        // 平均等级
+        const averageLevel = skills.length > 0
+            ? Math.round(skills.reduce((sum, skill) => sum + skill.level, 0) / skills.length)
+            : 0;
+
+        // 顶级技能（等级>=80）
+        const topSkills = skills
+            .filter(skill => skill.level >= 80)
+            .sort((a, b) => b.level - a.level)
+            .slice(0, 10);
+
+        res.json({
+            success: true,
+            data: {
+                total: skills.length,
+                categoryStats,
+                levelDistribution,
+                averageLevel,
+                topSkills
+            }
+        });
+    } catch (error) {
+        console.error('Get skill stats error:', error);
+        res.status(500).json({
+            success: false,
+            message: '获取技能统计失败'
+        });
+    }
+});
+
 // 获取单个技能
 router.get('/:id', async (req, res) => {
     try {

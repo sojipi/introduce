@@ -89,6 +89,49 @@ router.get('/', async (req, res) => {
     }
 });
 
+// 获取项目统计（必须在 /:id 之前）
+router.get('/stats/summary', async (req, res) => {
+    try {
+        const projectsResult = await edgeStorage.get('projects:list');
+        const projects = projectsResult.data || [];
+
+        // 按分类统计
+        const categoryStats = projects.reduce((stats, project) => {
+            const category = project.category || 'other';
+            stats[category] = (stats[category] || 0) + 1;
+            return stats;
+        }, {});
+
+        // 按状态统计（如果有状态字段）
+        const statusStats = projects.reduce((stats, project) => {
+            const status = project.status || 'active';
+            stats[status] = (stats[status] || 0) + 1;
+            return stats;
+        }, {});
+
+        // 最近的项目
+        const recentProjects = projects
+            .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+            .slice(0, 5);
+
+        res.json({
+            success: true,
+            data: {
+                total: projects.length,
+                categoryStats,
+                statusStats,
+                recentProjects
+            }
+        });
+    } catch (error) {
+        console.error('Get project stats error:', error);
+        res.status(500).json({
+            success: false,
+            message: '获取项目统计失败'
+        });
+    }
+});
+
 // 获取单个项目
 router.get('/:id', async (req, res) => {
     try {
