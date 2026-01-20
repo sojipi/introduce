@@ -43,12 +43,6 @@ const routes = [
         name: 'Skills',
         component: Skills,
         meta: { requiresAuth: true }
-    },
-    {
-        path: '/storage',
-        name: 'Storage',
-        component: Storage,
-        meta: { requiresAuth: true }
     }
 ];
 
@@ -116,12 +110,6 @@ const App = {
                             <router-link to="/skills" class="nav-link" @click="closeMobileSidebar">
                                 <i class="fas fa-cogs"></i>
                                 <span v-show="!sidebarCollapsed">技能管理</span>
-                            </router-link>
-                        </li>
-                        <li>
-                            <router-link to="/storage" class="nav-link" @click="closeMobileSidebar">
-                                <i class="fas fa-database"></i>
-                                <span v-show="!sidebarCollapsed">存储管理</span>
                             </router-link>
                         </li>
                     </ul>
@@ -230,8 +218,7 @@ const App = {
                 Projects: '项目管理',
                 Awards: '获奖管理',
                 Timeline: '时间线管理',
-                Skills: '技能管理',
-                Storage: '存储管理'
+                Skills: '技能管理'
             };
             return titles[this.$route.name] || '管理后台';
         },

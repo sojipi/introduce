@@ -22,6 +22,9 @@ const Timeline = {
                             
                             <el-select v-model="filters.type" placeholder="类型" clearable style="width: 120px;">
                                 <el-option label="全部" value="all"></el-option>
+                                <el-option label="工作" value="work"></el-option>
+                                <el-option label="教育" value="education"></el-option>
+                                <el-option label="创业" value="entrepreneurship"></el-option>
                                 <el-option label="竞赛" value="competition"></el-option>
                                 <el-option label="获奖" value="award"></el-option>
                                 <el-option label="项目" value="project"></el-option>
@@ -246,6 +249,9 @@ const Timeline = {
                         <el-col :span="12">
                             <el-form-item label="事件类型" prop="type">
                                 <el-select v-model="form.type" placeholder="选择事件类型" style="width: 100%;">
+                                    <el-option label="工作" value="work"></el-option>
+                                    <el-option label="教育" value="education"></el-option>
+                                    <el-option label="创业" value="entrepreneurship"></el-option>
                                     <el-option label="竞赛" value="competition"></el-option>
                                     <el-option label="获奖" value="award"></el-option>
                                     <el-option label="项目" value="project"></el-option>
@@ -620,6 +626,9 @@ const Timeline = {
 
         getTypeIcon(type) {
             const icons = {
+                work: 'fas fa-briefcase',
+                education: 'fas fa-graduation-cap',
+                entrepreneurship: 'fas fa-rocket',
                 competition: 'fas fa-trophy',
                 award: 'fas fa-medal',
                 project: 'fas fa-code',
@@ -631,6 +640,9 @@ const Timeline = {
 
         getTypeName(type) {
             const names = {
+                work: '工作',
+                education: '教育',
+                entrepreneurship: '创业',
                 competition: '竞赛',
                 award: '获奖',
                 project: '项目',
