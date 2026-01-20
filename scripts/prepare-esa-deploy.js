@@ -15,17 +15,34 @@ console.log('🚀 开始准备 ESA 部署文件...\n');
 const deployDir = path.join(__dirname, '..', 'deploy');
 if (fs.existsSync(deployDir)) {
     console.log('🧹 清理旧的部署目录...');
-    fs.rmSync(deployDir, { recursive: true });
+    try {
+        if (fs.rmSync) {
+            fs.rmSync(deployDir, { recursive: true, force: true });
+        } else {
+            // 旧版 Node 兼容
+            deleteFolderRecursive(deployDir);
+        }
+    } catch (e) {
+        console.warn('⚠️ 清理目录失败，尝试继续:', e.message);
+    }
 }
-fs.mkdirSync(deployDir);
+fs.mkdirSync(deployDir, { recursive: true });
 
 // 2. 构建前端
 console.log('📦 构建前端...');
 try {
+    // 显式检查 vite 是否可用
+    try {
+        execSync('npm list vite', { stdio: 'ignore' });
+    } catch (e) {
+        console.log('⚠️ 未检测到 vite，尝试安装依赖...');
+        execSync('npm install --only=dev', { stdio: 'inherit' });
+    }
+
     execSync('npm run build', { stdio: 'inherit' });
     console.log('✅ 前端构建完成\n');
 } catch (error) {
-    console.error('❌ 前端构建失败');
+    console.error('❌ 前端构建失败:', error.message);
     process.exit(1);
 }
 
@@ -34,12 +51,18 @@ console.log('📁 复制文件到部署目录...');
 
 // 复制 dist 目录内容到 deploy 根目录
 const distDir = path.join(__dirname, '..', 'dist');
-copyDirectory(distDir, deployDir);
+if (fs.existsSync(distDir)) {
+    copyDirectory(distDir, deployDir);
+} else {
+    console.error('❌ dist 目录不存在，构建可能失败');
+    process.exit(1);
+}
 
 // 复制 admin 静态文件
 const adminPublicDir = path.join(__dirname, '..', 'admin', 'public');
 const deployAdminDir = path.join(deployDir, 'admin');
 if (fs.existsSync(adminPublicDir)) {
+    console.log('  -> 复制 admin 目录...');
     copyDirectory(adminPublicDir, deployAdminDir);
 } else {
     console.warn('⚠️  admin/public 目录不存在，跳过');
@@ -218,6 +241,20 @@ function copyDirectory(src, dest) {
             fs.copyFileSync(srcPath, destPath);
         }
     }
+}
+
+function deleteFolderRecursive(path) {
+  if (fs.existsSync(path)) {
+    fs.readdirSync(path).forEach(function(file, index){
+      var curPath = path + "/" + file;
+      if (fs.lstatSync(curPath).isDirectory()) { // recurse
+        deleteFolderRecursive(curPath);
+      } else { // delete file
+        fs.unlinkSync(curPath);
+      }
+    });
+    fs.rmdirSync(path);
+  }
 }
 
 function getDirectoryStats(dir) {

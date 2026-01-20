@@ -1,7 +1,7 @@
 {
   "name": "tech-showcase",
   "entry": "./src/index.js",
-  "installCommand": "npm install",
+  "installCommand": "npm install --production=false",
   "buildCommand": "npm run deploy:prepare",
   "assets": {
     "directory": "./deploy"

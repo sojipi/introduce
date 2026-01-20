@@ -20,7 +20,9 @@ export default {
         // 2. 如果访问 /admin/，内部重写到 /admin/index.html
         if (path === '/admin/') {
             url.pathname = '/admin/index.html';
-            return fetch(url);
+            // 关键：创建一个新的 Request 对象，保留原始请求的 headers (如 Cookie 等)
+            // 但使用修改后的 URL
+            return fetch(new Request(url, request));
         }
 
         // 3. 尝试获取原始请求的资源
@@ -37,11 +39,19 @@ export default {
                 if (!path.startsWith('/admin/')) {
                     const homeUrl = new URL(request.url);
                     homeUrl.pathname = '/index.html';
-                    return fetch(homeUrl);
+                    return fetch(new Request(homeUrl, request));
                 }
             }
         }
 
-        return response;
+        // 添加调试头，方便排查问题
+        const newHeaders = new Headers(response.headers);
+        newHeaders.set('X-ESA-Path', path);
+        
+        return new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: newHeaders
+        });
     }
 };
